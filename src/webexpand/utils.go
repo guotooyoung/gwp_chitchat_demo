@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sausheong/gwp/Chapter_2_Go_ChitChat/chitchat/data"
+	"github.com/guotooyoung/gwp_chitchat_demo/data"
 	"html/template"
 	"log"
 	"net/http"
