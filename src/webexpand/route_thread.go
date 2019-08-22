@@ -8,9 +8,10 @@ import (
 
 // GET /threads/new
 // Show the new thread form page
-func newThread(writer http.ResponseWriter, request *http.Request) {
+func NewThread(writer http.ResponseWriter, request *http.Request) {
 	_, err := session(writer, request)
 	if err != nil {
+		logger.Print("new thread failed",err)
 		http.Redirect(writer, request, "/login", 302)
 	} else {
 		generateHTML(writer, nil, "layout", "private.navbar", "new.thread")
@@ -19,8 +20,10 @@ func newThread(writer http.ResponseWriter, request *http.Request) {
 
 // POST /signup
 // Create the user account
-func createThread(writer http.ResponseWriter, request *http.Request) {
+func CreateThread(writer http.ResponseWriter, request *http.Request) {
+
 	sess, err := session(writer, request)
+
 	if err != nil {
 		http.Redirect(writer, request, "/login", 302)
 	} else {
@@ -29,10 +32,12 @@ func createThread(writer http.ResponseWriter, request *http.Request) {
 			danger(err, "Cannot parse form")
 		}
 		user, err := sess.User()
+
 		if err != nil {
 			danger(err, "Cannot get user from session")
 		}
 		topic := request.PostFormValue("topic")
+
 		if _, err := user.CreateThread(topic); err != nil {
 			danger(err, "Cannot create thread")
 		}
@@ -42,7 +47,7 @@ func createThread(writer http.ResponseWriter, request *http.Request) {
 
 // GET /thread/read
 // Show the details of the thread, including the posts and the form to write a post
-func readThread(writer http.ResponseWriter, request *http.Request) {
+func ReadThread(writer http.ResponseWriter, request *http.Request) {
 	vals := request.URL.Query()
 	uuid := vals.Get("id")
 	thread, err := data.ThreadByUUID(uuid)
@@ -60,7 +65,7 @@ func readThread(writer http.ResponseWriter, request *http.Request) {
 
 // POST /thread/post
 // Create the post
-func postThread(writer http.ResponseWriter, request *http.Request) {
+func PostThread(writer http.ResponseWriter, request *http.Request) {
 	sess, err := session(writer, request)
 	if err != nil {
 		http.Redirect(writer, request, "/login", 302)

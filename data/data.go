@@ -6,16 +6,21 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
 
 var Db *sql.DB
-
+var logger *log.Logger
 func init() {
 	var err error
-	Db, err = sql.Open("postgres", "dbname=chitchat sslmode=disable")
+	//Db, err = sql.Open("postgres", "dbname=chitchat sslmode=disable")
+	Db, err = sql.Open("mysql", "guolu:123456@tcp(172.16.13.30:3306)/chitchat?charset=utf8mb4&parseTime=True&loc=Local")
 	if err != nil {
 		log.Fatal(err)
+	}
+	if err = Db.Ping(); err != nil {
+		panic(err)
 	}
 	return
 }

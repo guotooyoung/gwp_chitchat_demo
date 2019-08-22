@@ -7,7 +7,7 @@ import (
 
 // GET /err?msg=
 // shows the error message page
-func err(writer http.ResponseWriter, request *http.Request) {
+func Err(writer http.ResponseWriter, request *http.Request) {
 	vals := request.URL.Query()
 	_, err := session(writer, request)
 	if err != nil {
@@ -17,7 +17,7 @@ func err(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func index(writer http.ResponseWriter, request *http.Request) {
+func Index(writer http.ResponseWriter, request *http.Request) {
 	threads, err := data.Threads()
 	if err != nil {
 		error_message(writer, request, "Cannot get threads")

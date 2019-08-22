@@ -1,6 +1,7 @@
 package data
 
 import (
+	"log"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func (post *Post) CreatedAtDate() string {
 
 // get the number of posts in a thread
 func (thread *Thread) NumReplies() (count int) {
-	rows, err := Db.Query("SELECT count(*) FROM posts where thread_id = $1", thread.Id)
+	rows, err := Db.Query("SELECT count(*) FROM posts where thread_id = ?", thread.Id)
 	if err != nil {
 		return
 	}
@@ -47,7 +48,7 @@ func (thread *Thread) NumReplies() (count int) {
 
 // get posts to a thread
 func (thread *Thread) Posts() (posts []Post, err error) {
-	rows, err := Db.Query("SELECT id, uuid, body, user_id, thread_id, created_at FROM posts where thread_id = $1", thread.Id)
+	rows, err := Db.Query("SELECT id, uuid, body, user_id, thread_id, created_at FROM posts where thread_id = ?", thread.Id)
 	if err != nil {
 		return
 	}
@@ -64,27 +65,40 @@ func (thread *Thread) Posts() (posts []Post, err error) {
 
 // Create a new thread
 func (user *User) CreateThread(topic string) (conv Thread, err error) {
-	statement := "insert into threads (uuid, topic, user_id, created_at) values ($1, $2, $3, $4) returning id, uuid, topic, user_id, created_at"
-	stmt, err := Db.Prepare(statement)
-	if err != nil {
-		return
-	}
-	defer stmt.Close()
+
+	statement := "insert into threads (uuid, topic, user_id, created_at) values (?, ?, ?, ?)"
+	//stmt, err := Db.Prepare(statement)
+	//if err != nil {
+	//	return
+	//}
+	//defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
-	err = stmt.QueryRow(createUUID(), topic, user.Id, time.Now()).Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
+	conv = Thread{}
+	conv.Uuid = createUUID()
+	conv.Topic = topic
+	conv.UserId = user.Id
+	conv.CreatedAt = time.Now()
+	log.Print("CreateThread",conv.Uuid)
+	_,err = Db.Exec(statement,conv.Uuid, topic, user.Id, conv.CreatedAt)
 	return
 }
 
 // Create a new post to a thread
 func (user *User) CreatePost(conv Thread, body string) (post Post, err error) {
-	statement := "insert into posts (uuid, body, user_id, thread_id, created_at) values ($1, $2, $3, $4, $5) returning id, uuid, body, user_id, thread_id, created_at"
-	stmt, err := Db.Prepare(statement)
-	if err != nil {
-		return
-	}
-	defer stmt.Close()
+	statement := "insert into posts (uuid, body, user_id, thread_id, created_at) values (?, ?, ?, ?, ?)"
+	//stmt, err := Db.Prepare(statement)
+	//if err != nil {
+	//	return
+	//}
+	//defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
-	err = stmt.QueryRow(createUUID(), body, user.Id, conv.Id, time.Now()).Scan(&post.Id, &post.Uuid, &post.Body, &post.UserId, &post.ThreadId, &post.CreatedAt)
+	post = Post{}
+	post.Uuid=createUUID()
+	post.Body=body
+	post.UserId=user.Id
+	post.ThreadId=conv.Id
+	post.CreatedAt=time.Now()
+	_,err = Db.Exec(statement,createUUID(), body, user.Id, conv.Id, time.Now())
 	return
 }
 
@@ -108,7 +122,7 @@ func Threads() (threads []Thread, err error) {
 // Get a thread by the UUID
 func ThreadByUUID(uuid string) (conv Thread, err error) {
 	conv = Thread{}
-	err = Db.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE uuid = $1", uuid).
+	err = Db.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE uuid = ?", uuid).
 		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
 	return
 }
@@ -116,7 +130,7 @@ func ThreadByUUID(uuid string) (conv Thread, err error) {
 // Get the user who started this thread
 func (thread *Thread) User() (user User) {
 	user = User{}
-	Db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", thread.UserId).
+	Db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = ?", thread.UserId).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
 	return
 }
@@ -124,7 +138,7 @@ func (thread *Thread) User() (user User) {
 // Get the user who wrote the post
 func (post *Post) User() (user User) {
 	user = User{}
-	Db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", post.UserId).
+	Db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = ?", post.UserId).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
 	return
 }

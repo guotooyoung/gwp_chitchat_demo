@@ -19,11 +19,11 @@ type Configuration struct {
 	Static       string
 }
 
-var config Configuration
+var Config Configuration
 var logger *log.Logger
 
 // Convenience function for printing to stdout
-func p(a ...interface{}) {
+func P(a ...interface{}) {
 	fmt.Println(a)
 }
 
@@ -42,8 +42,8 @@ func loadConfig() {
 		log.Fatalln("Cannot open config file", err)
 	}
 	decoder := json.NewDecoder(file)
-	config = Configuration{}
-	err = decoder.Decode(&config)
+	Config = Configuration{}
+	err = decoder.Decode(&Config)
 	if err != nil {
 		log.Fatalln("Cannot get configuration from file", err)
 	}
@@ -58,6 +58,7 @@ func error_message(writer http.ResponseWriter, request *http.Request, msg string
 // Checks if the user is logged in and has a session, if not err is not nil
 func session(writer http.ResponseWriter, request *http.Request) (sess data.Session, err error) {
 	cookie, err := request.Cookie("_cookie")
+
 	if err == nil {
 		sess = data.Session{Uuid: cookie.Value}
 		if ok, _ := sess.Check(); !ok {
@@ -106,6 +107,6 @@ func warning(args ...interface{}) {
 }
 
 // version
-func version() string {
+func Version() string {
 	return "0.1"
 }

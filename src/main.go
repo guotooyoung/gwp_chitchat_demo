@@ -1,19 +1,20 @@
 package main
 
 import (
-	"fmt"
+	_"fmt"
 	"net/http"
+	_"os"
 	"time"
 	"github.com/guotooyoung/gwp_chitchat_demo/src/webexpand"
 )
 
 func main() {
-	fmt.Println("chitchat begin")
-	webexpand.p("ChitChat", webexpand.version(), "started at", webexpand.config.Address)
+	//fmt.Println(os.Getwd())
+	webexpand.P("ChitChat", webexpand.Version(), "started at", webexpand.Config.Address)
 
 	// handle static assets
 	mux := http.NewServeMux()
-	files := http.FileServer(http.Dir(webexpand.config.Static))
+	files := http.FileServer(http.Dir(webexpand.Config.Static))
 	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
 	//
@@ -22,29 +23,29 @@ func main() {
 	//
 
 	// index
-	mux.HandleFunc("/", webexpand.index)
+	mux.HandleFunc("/", webexpand.Index)
 	// error
-	mux.HandleFunc("/err", webexpand.err)
+	mux.HandleFunc("/err", webexpand.Err)
 
 	// defined in route_auth.go
-	mux.HandleFunc("/login", webexpand.login)
-	mux.HandleFunc("/logout", webexpand.logout)
-	mux.HandleFunc("/signup", webexpand.signup)
-	mux.HandleFunc("/signup_account", webexpand.signupAccount)
-	mux.HandleFunc("/authenticate", webexpand.authenticate)
+	mux.HandleFunc("/login", webexpand.Login)
+	mux.HandleFunc("/logout", webexpand.Logout)
+	mux.HandleFunc("/signup", webexpand.Signup)
+	mux.HandleFunc("/signup_account", webexpand.SignupAccount)
+	mux.HandleFunc("/authenticate", webexpand.Authenticate)
 
 	// defined in route_thread.go
-	mux.HandleFunc("/thread/new", webexpand.newThread)
-	mux.HandleFunc("/thread/create", webexpand.createThread)
-	mux.HandleFunc("/thread/post", webexpand.postThread)
-	mux.HandleFunc("/thread/read", webexpand.readThread)
+	mux.HandleFunc("/thread/new", webexpand.NewThread)
+	mux.HandleFunc("/thread/create", webexpand.CreateThread)
+	mux.HandleFunc("/thread/post", webexpand.PostThread)
+	mux.HandleFunc("/thread/read", webexpand.ReadThread)
 
 	// starting up the server
 	server := &http.Server{
-		Addr:           webexpand.config.Address,
+		Addr:           webexpand.Config.Address,
 		Handler:        mux,
-		ReadTimeout:    time.Duration(webexpand.config.ReadTimeout * int64(time.Second)),
-		WriteTimeout:   time.Duration(webexpand.config.WriteTimeout * int64(time.Second)),
+		ReadTimeout:    time.Duration(webexpand.Config.ReadTimeout * int64(time.Second)),
+		WriteTimeout:   time.Duration(webexpand.Config.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
 	}
 	server.ListenAndServe()
